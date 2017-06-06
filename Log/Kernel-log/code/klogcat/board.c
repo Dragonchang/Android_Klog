@@ -83,7 +83,7 @@ char *get_board_name (char *buf, int len)
 {
 	const char *unknown = "unknown";
 
-	char data [PROPERTY_VALUE_MAX];
+	char data [200];
 	int dlen;
 	int i;
 

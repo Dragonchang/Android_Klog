@@ -7,6 +7,7 @@
 #include "common.h"
 #include "client.h"
 #include "libcommon.h"
+#include <stddef.h>
 
 /*
  * return socket fd

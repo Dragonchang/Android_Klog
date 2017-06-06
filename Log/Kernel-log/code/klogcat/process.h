@@ -12,7 +12,7 @@
 #include <dirent.h>
 #include <pthread.h>
 
-#include "headers/glist.h"
+#include "glist.h"
 
 #ifdef __cplusplus
 extern "C" {

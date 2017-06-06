@@ -17,10 +17,11 @@
 #include <sys/statfs.h>
 #include <sys/time.h>
 
-#include <cutils/log.h>
+//#include <cutils/log.h>
 
 #include "libcommon.h"
 #include "dir.h"
+#include "common.h"
 
 static pthread_mutex_t dir_lock = PTHREAD_MUTEX_INITIALIZER;
 
@@ -107,7 +108,7 @@ static int dir_get_storage (char *realpath, int len, const char **storages)
 
 	for (i = 0; storages [i] != NULL; i ++)
 	{
-		fLOGD ("--> uid %d checking %s", getuid (), storages [i]);
+		DM ("--> uid %d checking %s", getuid (), storages [i]);
 
 		bzero (realpath, len);
 
@@ -123,13 +124,13 @@ static int dir_get_storage (char *realpath, int len, const char **storages)
 			{
 				if (active_fuse_storage && (strcmp (active_fuse_storage, realpath) == 0))
 				{
-					fLOGD ("--> use fuse path [%s]", realpath);
+					DM ("--> use fuse path [%s]", realpath);
 					strncpy (linkpath, realpath, sizeof (linkpath));
 					linkpath [sizeof (linkpath) - 1] = 0;
 					break;
 				}
 
-				fLOGD ("--> link [%s] to [%s]", linkpath, realpath);
+				DM ("--> link [%s] to [%s]", linkpath, realpath);
 
 				strncpy (linkpath, realpath, sizeof (linkpath));
 				linkpath [sizeof (linkpath) - 1] = 0;
@@ -138,7 +139,7 @@ static int dir_get_storage (char *realpath, int len, const char **storages)
 
 				if (readlink (linkpath, realpath, len - 1) < 0)
 				{
-					fLOGD ("--> readlink [%s]: %s", linkpath, strerror (errno));
+					DM ("--> readlink [%s]: %s", linkpath, strerror (errno));
 					break;
 				}
 			}
@@ -157,7 +158,7 @@ static int dir_get_storage (char *realpath, int len, const char **storages)
 			strncpy (realpath, storages [i], len);
 			realpath [len - 1] = 0;
 
-			fLOGD ("--> exist %s", realpath);
+			DM ("--> exist %s", realpath);
 			break;
 		}
 	}
@@ -181,14 +182,14 @@ static void detect_multi_user_fuse_storage_nolock ()
 		}
 	}
 
-	fLOGD ("detected multi-user fuse storage [%s]", active_fuse_storage);
+	DM ("detected multi-user fuse storage [%s]", active_fuse_storage);
 }
 
 static const char *dir_get_usb_storage_nolock (void)
 {
 	if (path_usb [0])
 	{
-		fLOGD ("usb --> use previous %s", path_usb);
+		DM ("usb --> use previous %s", path_usb);
 		return path_usb;
 	}
 
@@ -212,12 +213,12 @@ static const char *dir_get_usb_storage_nolock (void)
 		strncpy (path_usb, ext, sizeof (path_usb));
 		path_usb [sizeof (path_usb) - 1] = 0;
 
-		fLOGD ("usb --> %s %s", env, path_usb);
+		DM ("usb --> %s %s", env, path_usb);
 	}
 
 	correct_path (path_usb, sizeof (path_usb));
 
-	fLOGD ("usb --> use %s", path_usb);
+	DM ("usb --> use %s", path_usb);
 	return path_usb;
 }
 
@@ -234,7 +235,7 @@ static const char *dir_get_external_storage_nolock (void)
 {
 	if (path_external [0])
 	{
-		fLOGD ("external --> use previous %s", path_external);
+		DM ("external --> use previous %s", path_external);
 		return path_external;
 	}
 
@@ -263,12 +264,12 @@ static const char *dir_get_external_storage_nolock (void)
 		strncpy (path_external, ext, sizeof (path_external));
 		path_external [sizeof (path_external) - 1] = 0;
 
-		fLOGD ("external --> %s %s", env, path_external);
+		DM ("external --> %s %s", env, path_external);
 	}
 
 	correct_path (path_external, sizeof (path_external));
 
-	fLOGD ("external --> use %s", path_external);
+	DM ("external --> use %s", path_external);
 	return path_external;
 }
 
@@ -287,7 +288,7 @@ static const char *dir_get_phone_storage_nolock (void)
 
 	if (path_phone [0])
 	{
-		fLOGD ("phone --> use previous %s", path_phone);
+		DM ("phone --> use previous %s", path_phone);
 		return path_phone;
 	}
 
@@ -321,12 +322,12 @@ static const char *dir_get_phone_storage_nolock (void)
 		strncpy (path_phone, ext, sizeof (path_phone));
 		path_phone [sizeof (path_phone) - 1] = 0;
 
-		fLOGD ("phone --> %s %s", env, path_phone);
+		DM ("phone --> %s %s", env, path_phone);
 	}
 
 	correct_path (path_phone, sizeof (path_phone));
 
-	fLOGD ("phone --> use %s", path_phone);
+	DM ("phone --> use %s", path_phone);
 	return path_phone;
 }
 
@@ -386,13 +387,13 @@ int dir_get_mount_entry (const char *mountpoint, STORAGE_MOUNT_ENTRY *pme)
 
 	if ((fd = open (mounts, O_RDONLY)) < 0)
 	{
-		fLOGE ("open [%s]: %s", mounts, strerror (errno));
+		DM ("open [%s]: %s", mounts, strerror (errno));
 		return mounted;
 	}
 
 	if (isfuse /* is a multi-user fuse storage */)
 	{
-		fLOGD ("detected fuse, replace mountpoint [%s] with [%s]\n", mountpoint, fuse_mountpoint);
+		DM ("detected fuse, replace mountpoint [%s] with [%s]\n", mountpoint, fuse_mountpoint);
 
 		snprintf (mounts, sizeof (mounts), " %s ", fuse_mountpoint);
 	}
@@ -438,11 +439,11 @@ int dir_get_mount_entry (const char *mountpoint, STORAGE_MOUNT_ENTRY *pme)
 					if (! pme->options) break;
 					*pme->options ++ = 0;
 
-					fLOGD ("  [%s] <-> [%s][%s][%s][%s]", mounts, pme->device, pme->mountpoint, pme->type, pme->options);
+					DM ("  [%s] <-> [%s][%s][%s][%s]", mounts, pme->device, pme->mountpoint, pme->type, pme->options);
 				}
 				else
 				{
-					fLOGD ("  [%s] <-> [%s]", mounts, data);
+					DM ("  [%s] <-> [%s]", mounts, data);
 				}
 				break;
 			}
@@ -485,7 +486,7 @@ int dir_exists (const char *path)
 
 	if (stat (path, & st) < 0)
 	{
-		fLOGE ("stat [%s]: %s\n", path, strerror (errno));
+		DM ("stat [%s]: %s\n", path, strerror (errno));
 		return 0;
 	}
 
@@ -550,7 +551,7 @@ int dir_create_recursive (const char *path)
 					/* do not show EEXIST error here unless it's not a directory */
 					if (! dir_exists (pbuf))
 					{
-						fLOGW ("mkdir [%s]: path was existed but not a directory! force removing the invalid file and try again...\n", pbuf);
+						DM ("mkdir [%s]: path was existed but not a directory! force removing the invalid file and try again...\n", pbuf);
 
 						unlink_file (pbuf);
 
@@ -559,7 +560,7 @@ int dir_create_recursive (const char *path)
 				}
 				else
 				{
-					fLOGE ("mkdir [%s]: %s\n", path, strerror (errno));
+					DM ("mkdir [%s]: %s\n", path, strerror (errno));
 				}
 			}
 
@@ -575,28 +576,28 @@ int dir_create_recursive (const char *path)
 		{
 			if (! dir_exists (path))
 			{
-				fLOGW ("mkdir [%s]: path was existed but not a directory! force removing the invalid file and try again...\n", path);
+				DM ("mkdir [%s]: path was existed but not a directory! force removing the invalid file and try again...\n", path);
 
 				unlink_file (path);
 
 				if (mkdir (path, DEFAULT_DIR_MODE) < 0)
 				{
-					fLOGE ("mkdir retried [%s]: %s\n", path, strerror (errno));
+					DM ("mkdir retried [%s]: %s\n", path, strerror (errno));
 				}
 			}
 			else
 			{
-				fLOGD ("mkdir [%s]: %s\n", path, strerror (errno));
+				DM ("mkdir [%s]: %s\n", path, strerror (errno));
 			}
 		}
 		else
 		{
-			fLOGE ("mkdir [%s]: %s\n", path, strerror (errno));
+			DM ("mkdir [%s]: %s\n", path, strerror (errno));
 		}
 	}
 	else
 	{
-		fLOGD ("mkdir [%s] ok.\n", path);
+		DM ("mkdir [%s] ok.\n", path);
 	}
 
 	return (dir_exists (path) ? 0 : -1);
@@ -703,7 +704,7 @@ int dir_select_log_path (char *buffer, int len)
 
 		if ((dir_create_recursive (buffer) < 0) || (dir_write_test (buffer) < 0))
 		{
-			fLOGE ("cannot write to [%s]!\n", buffer);
+			DM ("cannot write to [%s]!\n", buffer);
 			return -1;
 		}
 		return 0;
@@ -763,7 +764,7 @@ int dir_select_log_path (char *buffer, int len)
 	}
 	else
 	{
-		fLOGE ("unknown keyword [%s]!\n", buffer);
+		DM ("unknown keyword [%s]!\n", buffer);
 		return -1;
 	}
 
@@ -779,11 +780,11 @@ int dir_select_log_path (char *buffer, int len)
 		{
 			if (! auto_select)
 			{
-				fLOGE ("cannot write to [%s]!\n", buffer);
+				DM ("cannot write to [%s]!\n", buffer);
 				return -1;
 			}
 
-			fLOGD ("cannot write to [%s], try external storage!\n", buffer);
+			DM ("cannot write to [%s], try external storage!\n", buffer);
 
 			/*
 			 * try other storages later
@@ -810,11 +811,11 @@ int dir_select_log_path (char *buffer, int len)
 		{
 			if (! auto_select)
 			{
-				fLOGE ("cannot write to [%s]!\n", buffer);
+				DM ("cannot write to [%s]!\n", buffer);
 				return -1;
 			}
 
-			fLOGD ("cannot write to [%s], try phone storage!\n", buffer);
+			DM ("cannot write to [%s], try phone storage!\n", buffer);
 
 			/*
 			 * try other storages later
@@ -840,11 +841,11 @@ int dir_select_log_path (char *buffer, int len)
 		{
 			if (! auto_select)
 			{
-				fLOGE ("cannot write to [%s]!\n", buffer);
+				DM ("cannot write to [%s]!\n", buffer);
 				return -1;
 			}
 
-			fLOGD ("cannot write to [%s], try internal storage!\n", buffer);
+			DM ("cannot write to [%s], try internal storage!\n", buffer);
 
 			/*
 			 * try internal storage later
@@ -861,7 +862,7 @@ int dir_select_log_path (char *buffer, int len)
 
 		if ((dir_create_recursive (buffer) < 0) || (dir_write_test (buffer) < 0))
 		{
-			fLOGE ("cannot write to [%s]!\n", buffer);
+			DM ("cannot write to [%s]!\n", buffer);
 			return -1;
 		}
 	}
@@ -879,7 +880,7 @@ int dir_clear (const char *path, GLIST *patterns)
 
 	if (stat (path, & st) < 0)
 	{
-		fLOGE ("stat [%s]: %s\n", path, strerror (errno));
+		DM ("stat [%s]: %s\n", path, strerror (errno));
 		return -1;
 	}
 
@@ -887,21 +888,21 @@ int dir_clear (const char *path, GLIST *patterns)
 	{
 		errno = 0;
 		unlink (path);
-		fLOGD ("unlink [%s][%s]\n", path, strerror (errno));
+		DM ("unlink [%s][%s]\n", path, strerror (errno));
 		return 0;
 	}
 
 	len = strlen (path) + PATH_MAX;
 
-	if ((buffer = malloc (len)) == NULL)
+	if ((buffer = (char* )malloc (len)) == NULL)
 	{
-		fLOGD ("malloc %d: %s\n", len, strerror (errno));
+		DM ("malloc %d: %s\n", len, strerror (errno));
 		return -1;
 	}
 
 	if ((dir = opendir (path)) == NULL)
 	{
-		fLOGD ("opendir [%s][%s]\n", path, strerror (errno));
+		DM ("opendir [%s][%s]\n", path, strerror (errno));
 		free (buffer);
 		return -1;
 	}
@@ -918,7 +919,7 @@ int dir_clear (const char *path, GLIST *patterns)
 
 			for (p = patterns; p; p = GLIST_NEXT (p))
 			{
-				s = GLIST_DATA (p);
+				s = (char *)GLIST_DATA (p);
 
 				if (s && (! strncmp (s, entry->d_name, strlen (s))))
 					break;
@@ -939,13 +940,13 @@ int dir_clear (const char *path, GLIST *patterns)
 			dir_clear (buffer, patterns);
 			errno = 0;
 			rmdir (buffer);
-			fLOGD ("rmdir [%s][%s]\n", buffer, strerror (errno));
+			DM ("rmdir [%s][%s]\n", buffer, strerror (errno));
 		}
 		else
 		{
 			errno = 0;
 			unlink (buffer);
-			fLOGD ("unlink [%s][%s]\n", buffer, strerror (errno));
+			DM ("unlink [%s][%s]\n", buffer, strerror (errno));
 		}
 	}
 
@@ -971,34 +972,34 @@ const char *dir_get_larger_storage(void)
 			memset (& st_ext, 0, sizeof (st_ext));
 			if (statfs (ext_path, & st_ext) < 0)
 			{
-				fLOGD ("statfs %s: %s\n", ext_path, strerror (errno));
+				DM ("statfs %s: %s\n", ext_path, strerror (errno));
 				return phone_path;
 			}
 			if (statfs (phone_path, & st_phone) < 0)
 			{
-				fLOGD ("statfs [%s]: %s\n", phone_path, strerror (errno));
+				DM ("statfs [%s]: %s\n", phone_path, strerror (errno));
 				return ext_path;
 			}
 
 			unsigned long phone_size = (unsigned long) ((unsigned long long) st_phone.f_bsize * (unsigned long long) st_phone.f_bfree / (1024*1024));
 			unsigned long ext_size = (unsigned long) ((unsigned long long) st_ext.f_bsize * (unsigned long long) st_ext.f_bfree / (1024*1024));
-			fLOGD("%s: free size = %luMB\n", phone_path, phone_size);
-			fLOGD("%s: free size = %luMB\n", ext_path, ext_size);
+			DM("%s: free size = %luMB\n", phone_path, phone_size);
+			DM("%s: free size = %luMB\n", ext_path, ext_size);
 
 			if (ext_size > phone_size)
 			{
-				fLOGD("external storage free size is larger than phone storage.\n");
+				DM("external storage free size is larger than phone storage.\n");
 				return ext_path;
 			}
 			else
 			{
-				fLOGD("phone storage free size is larger than external storage.\n");
+				DM("phone storage free size is larger than external storage.\n");
 				return phone_path;
 			}
 		}
 		else
 		{
-			fLOGD("phone storage is not mount, use external storage [%s]\n", ext_path);
+			DM("phone storage is not mount, use external storage [%s]\n", ext_path);
 			return ext_path;
 		}
 	}
@@ -1006,12 +1007,12 @@ const char *dir_get_larger_storage(void)
 	{
 		if (phone_state == 1)
 		{
-			fLOGD("external storage is not mount, use phone storage [%s]\n", phone_path);
+			DM("external storage is not mount, use phone storage [%s]\n", phone_path);
 			return phone_path;
 		}
 		else
 		{
-			fLOGD("Both phone and external storage are not mounted.\n");
+			DM("Both phone and external storage are not mounted.\n");
 			return NULL;
 		}
 	}

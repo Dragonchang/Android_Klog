@@ -13,16 +13,16 @@
 #include <sys/prctl.h>
 #include <sys/time.h>
 
-#include <cutils/sockets.h>
+#include <sys/socket.h>
 
-#include "headers/sem.h"
-#include "headers/fio.h"
-#include "headers/dir.h"
-#include "headers/pollbase.h"
-#include "headers/process.h"
+#include "sem.h"
+#include "fio.h"
+#include "dir.h"
+#include "pollbase.h"
+#include "process.h"
 
-#include "headers/common.h"
-#include "headers/server.h"
+#include "common.h"
+#include "server.h"
 
 #define	FILE_PREFIX	"kernel_" LOG_FILE_TAG
 
@@ -446,203 +446,10 @@ int logger_common_generate_new_file (const char *name, const char *file_prefix, 
 	return 0;
 }
 
-static int read_from_htc_dk_service (char *buffer, int len)
-{
-	int socket_fd, count, rlen;
-
-	for (count = 1; count <= 10; count ++)
-	{
-		// read htc_dk for kmsg
-		if ((socket_fd = socket_local_client ("htc_dk", ANDROID_SOCKET_NAMESPACE_RESERVED, SOCK_STREAM)) >= 0)
-			break;
-
-		file_log (LOG_TAG ": failed to connect to htc_dk service (%d)! %s\n", count, strerror (errno));
-
-		sleep (1);
-	}
-
-	count = -1;
-
-	if (socket_fd >= 0)
-	{
-		count = 0;
-
-		// it may need multiple times to read data from socket
-		while (1)
-		{
-			if ((rlen = read_nointr (socket_fd, & buffer [count], len - count)) < 0)
-			{
-				file_log (LOG_TAG ": failed to read data from htc_dk service! %s\n", strerror (errno));
-				count = -1;
-				break;
-			}
-
-			if (rlen == 0) /* no more data */
-				break;
-
-		#if SHOW_DUMPDMESG_SIZE
-			file_log (LOG_TAG ": htc_dk read_nointr = %d\n", rlen);
-		#endif
-
-			count += rlen;
-
-			if (count >= len)
-			{
-				file_log (LOG_TAG ": htc_dk read not enough buffer!\n");
-				break;
-			}
-		}
-
-		close_nointr (socket_fd);
-	}
-
-#if SHOW_DUMPDMESG_SIZE
-	file_log (LOG_TAG ": htc_dk read_nointr total = %d\n", count);
-#endif
-
-	if (count > 0)
-	{
-		char *ptr;
-
-		/*
-		 * remove tailing useless new lines
-		 */
-		if (buffer [count - 1] == '\n')
-		{
-			for (ptr = & buffer [count - 1], rlen = 0; (ptr != buffer) && ((*ptr == '\r') || (*ptr == '\n')); ptr --, rlen ++);
-
-			if ((*(ptr + 1) == '\n') && ((*(ptr + 2) == '\r') || (*(ptr + 2) == '\n')))
-			{
-				count -= rlen - 1;
-			}
-		}
-		else
-		{
-			for (ptr = & buffer [count - 1], rlen = 0; (ptr != buffer) && (*ptr != '\n'); ptr --, rlen ++);
-
-			if (*ptr == '\n')
-			{
-				count -= rlen;
-			}
-		}
-
-	#if 0
-		// remove incomplete header data
-		if ((buffer [0] != '<') || (buffer [2] != '>'))
-		{
-			*head = strchr (buffer, '\n');
-
-			if (*head) *head ++;
-		}
-	#endif
-
-	#if SHOW_DUMPDMESG_SIZE
-		file_log (LOG_TAG ": htc_dk count fixed = %d\n", count);
-	#endif
-	}
-
-	return count;
-}
-
-static int read_from_htc_dlk_service (char *buffer, int len)
-{
-	int socket_fd, count, rlen;
-
-	for (count = 1; count <= 10; count ++)
-	{
-		// read htc_dlk for lastkmsg
-		if ((socket_fd = socket_local_client ("htc_dlk", ANDROID_SOCKET_NAMESPACE_RESERVED, SOCK_STREAM)) >= 0)
-			break;
-
-		file_log (LOG_TAG ": failed to connect to htc_dlk service (%d)! %s\n", count, strerror (errno));
-
-		sleep (1);
-	}
-
-	count = -1;
-
-	if (socket_fd >= 0)
-	{
-		count = 0;
-
-		// it may need multiple times to read data from socket
-		while (1)
-		{
-			if ((rlen = read_nointr (socket_fd, & buffer [count], len - count)) < 0)
-			{
-				DM ("failed to read data from htc_dlk service! %s\n", strerror (errno));
-				count = -1;
-				break;
-			}
-
-			if (rlen == 0) /* no more data */
-				break;
-
-		#if SHOW_DUMPDMESG_SIZE
-			file_log (LOG_TAG ": htc_dlk read_nointr = %d\n", rlen);
-		#endif
-
-			count += rlen;
-
-			if (count >= len)
-			{
-				file_log (LOG_TAG ": htc_dlk read not enough buffer!\n");
-				break;
-			}
-		}
-
-		close_nointr (socket_fd);
-	}
-
-#if SHOW_DUMPDMESG_SIZE
-	file_log (LOG_TAG ": htc_dlk read_nointr total = %d\n", count);
-#endif
-
-	if (count > 0)
-	{
-		char *ptr;
-
-		// remove tailing useless new lines
-		if (buffer [count - 1] == '\n')
-		{
-			for (ptr = & buffer [count - 1], rlen = 0; (ptr != buffer) && ((*ptr == '\r') || (*ptr == '\n')); ptr --, rlen ++);
-
-			if ((*(ptr + 1) == '\n') && ((*(ptr + 2) == '\r') || (*(ptr + 2) == '\n')))
-			{
-				count -= rlen - 1;
-			}
-		}
-		else
-		{
-			for (ptr = & buffer [count - 1], rlen = 0; (ptr != buffer) && (*ptr != '\n'); ptr --, rlen ++);
-
-			if (*ptr == '\n')
-			{
-				count -= rlen;
-			}
-		}
-
-	#if 0
-		// remove incomplete header data
-		if ((buffer [0] != '<') || (buffer [2] != '>'))
-		{
-			*head = strchr (buffer, '\n');
-
-			if (*head) *head ++;
-		}
-	#endif
-
-	#if SHOW_DUMPDMESG_SIZE
-		file_log (LOG_TAG ": htc_dlk count fixed = %d\n", count);
-	#endif
-	}
-
-	return count;
-}
 
 static void *thread_main (void *arg)
 {
-	const char *name = arg;
+	const char *name = (char *)arg;
 
 	int count;
 	int fd = -1;
@@ -657,9 +464,9 @@ static void *thread_main (void *arg)
 
 	sem_init (& timed_lock, 0, 0);
 
-	property_get ("debugtool.fsync", kbuf, "1");
+	//property_get ("debugtool.fsync", kbuf, "1");
 
-	do_fsync = (kbuf [0] == '1');
+	//do_fsync = (kbuf [0] == '1');
 
 	file_log (LOG_TAG ": file[%s], use_htc_dk_service[%d], use_htc_dlk_service[%d].\n", m_szLogFilename, use_htc_dk_service, use_htc_dlk_service);
 
@@ -681,7 +488,7 @@ static void *thread_main (void *arg)
 		}
 
 		// read kernel log
-		if (use_htc_dk_service)
+		/*if (use_htc_dk_service)
 		{
 			count = read_from_htc_dk_service (kbuf, sizeof (kbuf) - 1);
 
@@ -705,7 +512,7 @@ static void *thread_main (void *arg)
 				break;
 			}
 		}
-		else
+		else*/
 		{
 			if (m_nDumpType == 1)		// lastkmsg
 			{

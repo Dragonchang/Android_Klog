@@ -23,12 +23,11 @@
 #include <sys/klog.h>
 #include <sys/prctl.h>
 #include <sys/time.h>
-#include <private/android_filesystem_config.h>
 
-#include <cutils/sockets.h>
-#include "headers/common.h"
-#include "headers/sem.h"
-#include "headers/process.h"
+#include <sys/socket.h>
+#include "common.h"
+#include "sem.h"
+#include "process.h"
 
 #define	VERSION	"1.4"
 /*
@@ -240,14 +239,6 @@ int main (int argc, char **argv)
 {
 	char *value = NULL;
 	int ret = 0;
-
-	uid_t myuid = getuid();
-
-	if (myuid != AID_ROOT && myuid != AID_SYSTEM)
-	{
-		DM ("main(), klogcat: uid %d not allowed.\n", myuid);
-		return 1;
-	}
 
 	parse_args(argc, argv);
 

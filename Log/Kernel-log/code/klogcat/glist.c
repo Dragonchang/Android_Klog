@@ -5,7 +5,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "headers/glist.h"
+#include "glist.h"
 
 int glist_length (GLIST **head)
 {

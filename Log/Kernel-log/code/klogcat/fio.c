@@ -14,14 +14,17 @@
 #include <pthread.h>
 #include <errno.h>
 
-#include <cutils/log.h>
+//#include <cutils/log.h>
 
 #include "common.h"
 #include "libcommon.h"
-#include "headers/str.h"
-#include "headers/dir.h"
-#include "headers/fio.h"
-#include "headers/pollbase.h"
+#include "str.h"
+#include "dir.h"
+#include "fio.h"
+#include "pollbase.h"
+#include <sys/syscall.h> 
+#define gettid() syscall(__NR_gettid)
+
 
 int open_nointr (const char *pathname, int flags, mode_t mode)
 {
@@ -35,12 +38,12 @@ int open_nointr (const char *pathname, int flags, mode_t mode)
 		{
 			if (errno == EINTR)
 			{
-				fLOGW ("%s, retry open [%s]\n", strerror (errno), pathname);
+				DM ("%s, retry open [%s]\n", strerror (errno), pathname);
 				usleep (10000);
 				continue;
 			}
 
-			fLOGE ("open [%s]: %s\n", pathname, strerror (errno));
+			DM ("open [%s]: %s\n", pathname, strerror (errno));
 		}
 
 		break;
@@ -61,12 +64,12 @@ int close_nointr (int fd)
 		{
 			if (errno == EINTR)
 			{
-				fLOGW ("%s, retry close fd [%d]\n", strerror (errno), fd);
+				DM ("%s, retry close fd [%d]\n", strerror (errno), fd);
 				usleep (10000);
 				continue;
 			}
 
-			fLOGE ("close fd %d: %s\n", fd, strerror (errno));
+			DM ("close fd %d: %s\n", fd, strerror (errno));
 		}
 
 		break;
@@ -87,12 +90,12 @@ ssize_t read_nointr (int fd, void *buf, size_t count)
 		{
 			if (errno == EINTR)
 			{
-				fLOGW ("%s, retry read fd [%d]\n", strerror (errno), fd);
+				DM ("%s, retry read fd [%d]\n", strerror (errno), fd);
 				usleep (10000);
 				continue;
 			}
 
-			fLOGE ("read fd %d: %s\n", fd, strerror (errno));
+			DM ("read fd %d: %s\n", fd, strerror (errno));
 		}
 
 		break;
@@ -114,11 +117,11 @@ ssize_t read_timeout (int fd, void *buf, size_t count, int timeout_ms)
 	{
 		ret = poll_wait (& poller, fd, timeout_ms);
 
-		fLOGI ("read_timeout: poll return %d", (int) ret);
+		DM ("read_timeout: poll return %d", (int) ret);
 
 		if (ret == 0)
 		{
-			fLOGW ("read_timeout: poll timeout\n");
+			DM ("read_timeout: poll timeout\n");
 			break;
 		}
 
@@ -131,13 +134,13 @@ ssize_t read_timeout (int fd, void *buf, size_t count, int timeout_ms)
 
 		if (ret == 0)
 		{
-			fLOGW ("read_timeout: read empty, retry\n");
+			DM ("read_timeout: read empty, retry\n");
 			continue;
 		}
 
 		if (ret < 0)
 		{
-			fLOGE ("read_timeout: read fd %d: %s\n", fd, strerror (errno));
+			DM ("read_timeout: read fd %d: %s\n", fd, strerror (errno));
 			break;
 		}
 
@@ -160,12 +163,12 @@ ssize_t write_nointr (int fd, const void *buf, size_t count)
 		{
 			if (errno == EINTR)
 			{
-				fLOGW ("%s, retry write fd [%d]\n", strerror (errno), fd);
+				DM ("%s, retry write fd [%d]\n", strerror (errno), fd);
 				usleep (10000);
 				continue;
 			}
 
-			fLOGE ("write fd %d: %s\n", fd, strerror (errno));
+			DM ("write fd %d: %s\n", fd, strerror (errno));
 		}
 
 		break;
@@ -186,12 +189,12 @@ FILE *fopen_nointr (const char *path, const char *mode)
 		{
 			if (errno == EINTR)
 			{
-				fLOGW ("%s, retry fopen [%s]\n", strerror (errno), path);
+				DM ("%s, retry fopen [%s]\n", strerror (errno), path);
 				usleep (10000);
 				continue;
 			}
 
-			fLOGE ("fopen [%s]: %s\n", path, strerror (errno));
+			DM ("fopen [%s]: %s\n", path, strerror (errno));
 		}
 
 		break;
@@ -212,12 +215,12 @@ int fclose_nointr (FILE *fp)
 		{
 			if (errno == EINTR)
 			{
-				fLOGW ("%s, retry fclose fd [%d]\n", strerror (errno), fileno (fp));
+				DM ("%s, retry fclose fd [%d]\n", strerror (errno), fileno (fp));
 				usleep (10000);
 				continue;
 			}
 
-			fLOGE ("fclose fd %d: %s\n", fileno (fp), strerror (errno));
+			DM ("fclose fd %d: %s\n", fileno (fp), strerror (errno));
 		}
 
 		break;
@@ -238,12 +241,12 @@ int statfs_nointr (const char *path, struct statfs *buf)
 		{
 			if (errno == EINTR)
 			{
-				fLOGW ("%s, retry statfs [%s]\n", strerror (errno), path);
+				DM ("%s, retry statfs [%s]\n", strerror (errno), path);
 				usleep (10000);
 				continue;
 			}
 
-			fLOGE ("statfs [%s]: %s\n", path, strerror (errno));
+			DM ("statfs [%s]: %s\n", path, strerror (errno));
 		}
 
 		break;
@@ -254,7 +257,7 @@ int statfs_nointr (const char *path, struct statfs *buf)
 
 void file_close (FILEIO *pfio)
 {
-	fLOGI ("file_close (0x%lX)", (long) pfio);
+	DM ("file_close (0x%lX)", (long) pfio);
 
 	if (pfio)
 	{
@@ -268,11 +271,11 @@ FILEIO *file_open (const char *filename)
 {
 	FILEIO *ret = NULL;
 
-	fLOGI ("file_open (%s)", filename);
+	DM ("file_open (%s)", filename);
 
 	ret = (FILEIO *) malloc (sizeof (FILEIO));
 
-	fLOGI ("file_open -> fd = 0x%lX", (long) ret);
+	DM ("file_open -> fd = 0x%lX", (long) ret);
 
 	if (! ret)
 		goto failed;
@@ -303,7 +306,7 @@ int file_read (FILEIO *pfio, char *buffer, int buffer_length, int timeout_ms)
 {
 	int nr, count;
 
-	fLOGI ("file_read (0x%lX)", (long) pfio);
+	DM ("file_read (0x%lX)", (long) pfio);
 
 	if ((! pfio) || (! buffer))
 		return -1;
@@ -314,14 +317,14 @@ int file_read (FILEIO *pfio, char *buffer, int buffer_length, int timeout_ms)
 	{
 		nr = poll_wait (& pfio->poller, pfio->fd, timeout_ms);
 
-		fLOGI ("file_read -> poll return %d", nr);
+		DM ("file_read -> poll return %d", nr);
 
 		if (nr <= 0)
 			break;
 
 		count = read_nointr (pfio->fd, buffer, buffer_length);
 
-		fLOGI ("file_read -> (%d)[%s]", count, buffer);
+		DM ("file_read -> (%d)[%s]", count, buffer);
 
 		if (count <= 0)
 		{
@@ -338,7 +341,7 @@ int file_read (FILEIO *pfio, char *buffer, int buffer_length, int timeout_ms)
 
 int file_write (FILEIO *pfio, char *buffer, int buffer_length)
 {
-	fLOGI ("file_write (0x%lX, \"%s\", %d)", (long) pfio, buffer, buffer_length);
+	DM ("file_write (0x%lX, \"%s\", %d)", (long) pfio, buffer, buffer_length);
 
 	if (! pfio)
 		return -1;
@@ -348,7 +351,7 @@ int file_write (FILEIO *pfio, char *buffer, int buffer_length)
 
 void file_interrupt (FILEIO *pfio)
 {
-	fLOGI ("file_interrupt (0x%lX)", (long) pfio);
+	DM ("file_interrupt (0x%lX)", (long) pfio);
 
 	if (! pfio)
 		return;
@@ -386,7 +389,7 @@ int file_mutex_write (char *path, const char *buffer, int len, int flags)
 
 	if (fd < 0)
 	{
-		fLOGD ("open_nointr %s: %s\n", path, strerror (errno));
+		DM ("open_nointr %s: %s\n", path, strerror (errno));
 	}
 	else
 	{
@@ -394,7 +397,7 @@ int file_mutex_write (char *path, const char *buffer, int len, int flags)
 
 		if (write_nointr (fd, buffer, len) < 0)
 		{
-			fLOGD ("write_nointr %s: %s\n", path, strerror (errno));
+			DM ("write_nointr %s: %s\n", path, strerror (errno));
 		}
 		else
 		{
@@ -422,7 +425,7 @@ int file_mutex_read (char *path, char *buffer, int len)
 
 	if (fd < 0)
 	{
-		fLOGD ("open_nointr %s: %s\n", path, strerror (errno));
+		DM ("open_nointr %s: %s\n", path, strerror (errno));
 	}
 	else
 	{
@@ -432,7 +435,7 @@ int file_mutex_read (char *path, char *buffer, int len)
 
 		if (ret < 0)
 		{
-			fLOGD ("read_nointr %s: %s\n", path, strerror (errno));
+			DM ("read_nointr %s: %s\n", path, strerror (errno));
 		}
 
 		close_nointr (fd);
@@ -474,7 +477,7 @@ long long file_size (const char *path)
 
 	if (stat (path, & st) < 0)
 	{
-		fLOGD ("stat %s: %s\n", path, strerror (errno));
+		DM ("stat %s: %s\n", path, strerror (errno));
 	}
 	else
 	{
@@ -502,7 +505,7 @@ static void try_rotate (const char *logpath, char *buffer, int len)
 
 	if (stat (logpath, & st) < 0)
 	{
-		fLOGD ("stat %s: %s\n", logpath, strerror (errno));
+		DM ("stat %s: %s\n", logpath, strerror (errno));
 	}
 	else if (st.st_size > 5000000 /* 5MB */)
 	{
@@ -511,7 +514,7 @@ static void try_rotate (const char *logpath, char *buffer, int len)
 
 		if (rename (logpath, buffer) < 0)
 		{
-			fLOGD ("rename %s to %s: %s\n", logpath, buffer, strerror (errno));
+			DM ("rename %s to %s: %s\n", logpath, buffer, strerror (errno));
 		}
 	}
 }
@@ -527,7 +530,7 @@ void file_log (const char *format, ...)
 	char *ptr;
 	int count, size = 1024;
 
-	if ((ptr = malloc (size)) == NULL)
+	if ((ptr = (char *)malloc (size)) == NULL)
 		return;
 
 	if (access (LOG_DIR, X_OK) != 0)
@@ -550,7 +553,7 @@ void file_log (const char *format, ...)
 		file_mutex_write ((char *) logpath, ptr, strlen (ptr), O_CREAT | O_RDWR | O_APPEND);
 	}
 
-	fLOGD ("%s", ptr);
+	DM ("%s", ptr);
 
 	try_rotate (logpath, ptr, size);
 
@@ -565,7 +568,7 @@ void file_log_command_output (const char *format, ...)
 	char *ptr;
 	int count, size = 1024;
 
-	if ((ptr = malloc (size)) == NULL)
+	if ((ptr = (char *)malloc (size)) == NULL)
 		return;
 
 	if (access (LOG_DIR, X_OK) != 0)
@@ -604,7 +607,7 @@ void file_log_command_output (const char *format, ...)
 	system (ptr);
 	pthread_mutex_unlock (& lock);
 
-	fLOGD ("%s", ptr);
+	DM ("%s", ptr);
 
 	try_rotate (logpath, ptr, size);
 
@@ -618,7 +621,7 @@ int file_copy (const char *path_from, const char *path_to, const char *filename)
 	size_t count, total;
 	int ret, err;
 
-	fLOGD ("copy [%s%s] to [%s%s] ...\n", path_from, filename, path_to, filename);
+	DM ("copy [%s%s] to [%s%s] ...\n", path_from, filename, path_to, filename);
 
 	ret = FILE_COPY_SUCCEEDED;
 	err = 0;
@@ -630,7 +633,7 @@ int file_copy (const char *path_from, const char *path_to, const char *filename)
 	{
 		ret = FILE_COPY_ERROR_SOURCE;
 		err = errno;
-		fLOGE ("copy from %s: %s\n", buf, strerror (errno));
+		DM ("copy from %s: %s\n", buf, strerror (errno));
 		goto end;
 	}
 
@@ -641,7 +644,7 @@ int file_copy (const char *path_from, const char *path_to, const char *filename)
 	{
 		ret = FILE_COPY_ERROR_DESTINATION;
 		err = errno;
-		fLOGE ("copy to %s: %s\n", buf, strerror (errno));
+		DM ("copy to %s: %s\n", buf, strerror (errno));
 		fclose (fpr);
 		goto end;
 	}
@@ -656,7 +659,7 @@ int file_copy (const char *path_from, const char *path_to, const char *filename)
 		{
 			ret = FILE_COPY_ERROR_SOURCE;
 			err = errno;
-			fLOGE ("read from %s%s: %s\n", path_from, filename, strerror (errno));
+			DM ("read from %s%s: %s\n", path_from, filename, strerror (errno));
 			break;
 		}
 
@@ -666,7 +669,7 @@ int file_copy (const char *path_from, const char *path_to, const char *filename)
 			{
 				ret = FILE_COPY_ERROR_DESTINATION;
 				err = errno;
-				fLOGE ("write to %s%s: %s\n", path_to, filename, strerror (errno));
+				DM ("write to %s%s: %s\n", path_to, filename, strerror (errno));
 				break;
 			}
 			total += count;
@@ -681,7 +684,7 @@ int file_copy (const char *path_from, const char *path_to, const char *filename)
 	fclose (fpr);
 	fclose (fpw);
 
-	fLOGD ("copied %u bytes.\n", (unsigned int) total);
+	DM ("copied %u bytes.\n", (unsigned int) total);
 
 end:;
 	errno = err;

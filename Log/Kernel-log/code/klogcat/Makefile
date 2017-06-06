@@ -3,7 +3,7 @@ CC := g++
 $(shell mkdir -p out)
 $(shell mkdir -p out/bin)
 $(shell mkdir -p out/obj)
-BIN_APP :=ZflThreadPool
+BIN_APP :=KLogcat
 #当前目录下除了out的所有子目录
 SUBDIRS=$(shell ls -l | grep ^d | awk '{if($$9 != "out") print $$9}')
 DEBUG=$(shell ls -l | grep ^d | awk '{if($$9 == "out") print $$9}')

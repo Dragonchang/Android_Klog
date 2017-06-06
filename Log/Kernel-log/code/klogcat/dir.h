@@ -8,6 +8,7 @@ extern "C" {
 #endif
 
 #include "glist.h"
+#include "common.h"
 
 #define	STORAGE_KEY_AUTO	"auto"
 #define	STORAGE_KEY_USB		"usb"

@@ -3,8 +3,8 @@
 #ifndef	_HTC_SERVICE_COMMON_H_
 #define	_HTC_SERVICE_COMMON_H_
 
-#include <cutils/log.h>
-#include <cutils/properties.h>
+//#include <cutils/log.h>
+//#include <cutils/properties.h>
 #include "libcommon.h"
 
 #include <stdio.h>
@@ -22,11 +22,7 @@
 extern int debug_more;
 
 #ifdef BUILD_AND
-  #ifdef FORCE_STDOUT
     #define DM(...) printf("["LOG_TAG"]: " __VA_ARGS__)
-  #else
-    #define DM(...) LOGD(__VA_ARGS__)
-  #endif
 #else
   #define DM(...) printf("["LOG_TAG"]: " __VA_ARGS__)
 #endif
