@@ -3,7 +3,7 @@
 #ifndef _HTC_FILEIO_H_
 #define _HTC_FILEIO_H_
 
-#include "headers/pollbase.h"
+#include "pollbase.h"
 
 #if __cplusplus
 extern "C" {

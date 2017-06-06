@@ -8,12 +8,12 @@
 #include <sys/types.h>
 #include <errno.h>
 
-#include <cutils/log.h>
-#include <cutils/properties.h>
+//#include <cutils/log.h>
+//#include <cutils/properties.h>
 
 #include "libcommon.h"
-#include "headers/board.h"
-#include "headers/fio.h"
+#include "board.h"
+#include "fio.h"
 
 #define IS_VALID_NAME_CHAR(c)	(isalnum (c) || (c == '_') || (c == '-') || (c == ' '))
 
@@ -33,7 +33,7 @@ int read_proc_cmdline (const char *key, char *value, int len, const char *defaul
 
 	if (klen >= (int) sizeof (buffer))
 	{
-		fLOGE ("read_proc_cmdline: given key is too long! (%d)", klen);
+		//fLOGE ("read_proc_cmdline: given key is too long! (%d)", klen);
 		strncpy (value, default_value, len - 1);
 		value [len - 1] = 0;
 		return -1;
@@ -41,7 +41,7 @@ int read_proc_cmdline (const char *key, char *value, int len, const char *defaul
 
 	if ((fd = open_nointr ("/proc/cmdline", O_RDONLY, DEFAULT_FILE_MODE)) < 0)
 	{
-		fLOGE ("open_nointr: /proc/cmdline: %s", strerror (errno));
+		//fLOGE ("open_nointr: /proc/cmdline: %s", strerror (errno));
 		strncpy (value, default_value, len - 1);
 		value [len - 1] = 0;
 		return -1;
@@ -94,17 +94,17 @@ char *get_board_name (char *buf, int len)
 
 	memset (data, 0, sizeof (data));
 
-	dlen = property_get ("ro.product.device", data, "");
+	dlen = 0;//property_get ("ro.product.device", data, "");
 
-	fLOGD ("get_board_name: read prop ro.product.device [%s]", data);
+	//fLOGD ("get_board_name: read prop ro.product.device [%s]", data);
 
 	if ((! data [0]) || (strcmp (data, unknown) == 0))
 	{
 		memset (data, 0, sizeof (data));
 
-		dlen = property_get ("ro.build.product", data, "");
+		dlen = 0;//property_get ("ro.build.product", data, "");
 
-		fLOGD ("get_board_name: read prop ro.build.product [%s]", data);
+		//fLOGD ("get_board_name: read prop ro.build.product [%s]", data);
 	}
 
 	if ((! data [0]) || (strcmp (data, unknown) == 0))
@@ -113,12 +113,12 @@ char *get_board_name (char *buf, int len)
 
 		dlen = read_proc_cmdline ("androidboot.hardware", data, sizeof (data), "");
 
-		fLOGD ("get_board_name: read cmdline androidboot.hardware [%s]", data);
+		//fLOGD ("get_board_name: read cmdline androidboot.hardware [%s]", data);
 	}
 
 	if ((! data [0]) || (strcmp (data, unknown) == 0))
 	{
-		fLOGD ("get_board_name: default %s", unknown);
+		//fLOGD ("get_board_name: default %s", unknown);
 
 		strcpy (data, unknown);
 
@@ -137,7 +137,7 @@ char *get_board_name (char *buf, int len)
 		break;
 	}
 
-	fLOGD ("get_board_name: [%s] (%d)", buf, dlen);
+	//fLOGD ("get_board_name: [%s] (%d)", buf, dlen);
 	return buf;
 }
 

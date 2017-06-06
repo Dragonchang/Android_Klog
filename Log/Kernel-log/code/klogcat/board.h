@@ -5,7 +5,7 @@
 extern "C" {
 #endif
 
-#include <cutils/properties.h>
+//#include <cutils/properties.h>
 
 #define	BOARD_NAME_LEN	PROPERTY_VALUE_MAX
 

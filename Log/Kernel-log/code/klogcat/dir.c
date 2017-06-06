@@ -20,7 +20,7 @@
 #include <cutils/log.h>
 
 #include "libcommon.h"
-#include "headers/dir.h"
+#include "dir.h"
 
 static pthread_mutex_t dir_lock = PTHREAD_MUTEX_INITIALIZER;
 

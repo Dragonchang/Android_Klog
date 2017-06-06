@@ -4,9 +4,9 @@
 #include <string.h>
 #include <unistd.h>
 #include <errno.h>
-#include "headers/common.h"
-#include "headers/client.h"
-#include "headers/libcommon.h"
+#include "common.h"
+#include "client.h"
+#include "libcommon.h"
 
 /*
  * return socket fd

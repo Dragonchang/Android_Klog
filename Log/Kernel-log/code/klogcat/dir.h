@@ -7,7 +7,7 @@
 extern "C" {
 #endif
 
-#include "headers/glist.h"
+#include "glist.h"
 
 #define	STORAGE_KEY_AUTO	"auto"
 #define	STORAGE_KEY_USB		"usb"

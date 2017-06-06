@@ -14,10 +14,10 @@
   #define PATH_MAX		(256 + 2)
 #endif
 
-#include "headers/str.h"
-#include "headers/fio.h"
-#include "headers/glist.h"
-#include "headers/dir.h"
+#include "str.h"
+#include "fio.h"
+#include "glist.h"
+#include "dir.h"
 
 extern int debug_more;
 
