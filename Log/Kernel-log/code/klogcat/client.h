@@ -1,6 +1,6 @@
 
-#ifndef	_HTC_SERVICE_CLIENT_H_
-#define	_HTC_SERVICE_CLIENT_H_
+#ifndef	_SERVICE_CLIENT_H_
+#define	_SERVICE_CLIENT_H_
 
 #include <sys/types.h>
 #include <sys/socket.h>

@@ -1,7 +1,7 @@
 
 
-#ifndef _PARTNER_HTC_SSDTEST_PROCESS_H_
-#define _PARTNER_HTC_SSDTEST_PROCESS_H_
+#ifndef _PARTNER_SSDTEST_PROCESS_H_
+#define _PARTNER_SSDTEST_PROCESS_H_
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -60,5 +60,5 @@ extern void dump_environ (void);
 } // extern "C"
 #endif
 
-#endif /* _PARTNER_HTC_SSDTEST_PROCESS_H_ */
+#endif 
 

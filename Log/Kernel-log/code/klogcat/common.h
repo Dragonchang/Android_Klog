@@ -1,7 +1,7 @@
 
 
-#ifndef	_HTC_SERVICE_COMMON_H_
-#define	_HTC_SERVICE_COMMON_H_
+#ifndef	_SERVICE_COMMON_H_
+#define	_SERVICE_COMMON_H_
 
 //#include <cutils/log.h>
 //#include <cutils/properties.h>

@@ -1,7 +1,7 @@
 
 
-#ifndef _HTC_FILEIO_H_
-#define _HTC_FILEIO_H_
+#ifndef _FILEIO_H_
+#define _FILEIO_H_
 
 #include "pollbase.h"
 

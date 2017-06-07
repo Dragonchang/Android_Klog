@@ -1,7 +1,7 @@
 
 
-#ifndef	_HTC_SERVICE_LINKED_LIST_H_
-#define	_HTC_SERVICE_LINKED_LIST_H_
+#ifndef	_SERVICE_LINKED_LIST_H_
+#define	_SERVICE_LINKED_LIST_H_
 
 typedef struct _g_list_ {
 	struct _g_list_	*next;

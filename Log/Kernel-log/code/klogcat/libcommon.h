@@ -10,7 +10,7 @@
 #define  DAT_DIR  "/data/"
 #define  TMP_DIR  "/sqlite_stmt_journals/"
 
-#define  LOG_FOLDER_NAME  "htclog/"
+#define  LOG_FOLDER_NAME  "kernellog/"
 #define  LOG_DIR  DAT_DIR LOG_FOLDER_NAME
 
 #define	LOG_DATA_EXT	"debugklog"
