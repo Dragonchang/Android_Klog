@@ -11,7 +11,7 @@
 #include <time.h>
 #include <sys/time.h>
 
-#include "headers/str.h"
+#include "str.h"
 
 char *strtrim (char *str)
 {

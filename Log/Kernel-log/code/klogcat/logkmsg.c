@@ -23,6 +23,7 @@
 
 #include "common.h"
 #include "server.h"
+#include <string.h> 
 
 #define	FILE_PREFIX	"kernel_" LOG_FILE_TAG
 
@@ -40,6 +41,7 @@ static char last [1024];
 
 int m_nDone = 0;
 char m_szLogFilename [PATH_MAX] = "";
+
 
 int logkmsg_rotate_logs (void)
 {
@@ -299,7 +301,6 @@ int logger_common_logdata_add_file (int fd, const char *name, const char *path_w
 	{
 		goto end;
 	}
-
 	ptr = strrchr (log_filename, '/');
 
 	if (! ptr)

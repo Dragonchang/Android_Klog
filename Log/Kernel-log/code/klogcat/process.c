@@ -20,10 +20,13 @@ extern "C" {
 #include <sys/prctl.h>
 #include <errno.h>
 
-#include <cutils/log.h>
+//#include <cutils/log.h>
 
 #include "libcommon.h"
-#include "headers/process.h"
+#include "process.h"
+#include "common.h"
+
+//#define gettid() syscall(__NR_gettid)
 
 int find_all_pids_of_bin (const char *bin_name, pid_t *pid_array, int array_count)
 {
@@ -151,7 +154,7 @@ GLIST *find_all_pids (void)
 
 		if (bin) bin ++; else bin = buffer;
 
-		pi = malloc (sizeof (PID_INFO));
+		pi = (PID_INFO *)malloc (sizeof (PID_INFO));
 
 		if (pi)
 		{
@@ -195,7 +198,7 @@ GLIST *find_all_fds (void)
 			if (entry->d_type == DT_DIR)
 				continue;
 
-			pi = malloc (sizeof (FD_INFO));
+			pi = (FD_INFO *)malloc (sizeof (FD_INFO));
 
 			if (pi)
 			{
@@ -233,7 +236,7 @@ void close_all_fds (GLIST *fds)
 
 	for (p = fds; p; p = GLIST_NEXT (p))
 	{
-		pi = GLIST_DATA (p);
+		pi = (FD_INFO *)GLIST_DATA (p);
 
 		/*
 		 * close all except properties
@@ -480,11 +483,11 @@ static void *thread_system (void *arg)
 
 	prctl (PR_SET_NAME, (unsigned long) name, 0, 0, 0);
 
-	fLOGD ("system_in_thread LD_LIBRARY_PATH=[%s]\n", getenv ("LD_LIBRARY_PATH"));
+	DM ("system_in_thread LD_LIBRARY_PATH=[%s]\n", getenv ("LD_LIBRARY_PATH"));
 
 	res = system ((const char *) arg);
 
-	fLOGD ("system_in_thread returned %d\n", res);
+	DM ("system_in_thread returned %d\n", res);
 	return NULL;
 }
 
@@ -492,11 +495,11 @@ void system_in_thread (const char *command)
 {
 	pthread_t thid = -1;
 
-	fLOGD ("system_in_thread [%s]\n", command);
+	DM ("system_in_thread [%s]\n", command);
 
 	if (pthread_create (& thid, NULL, thread_system, (void *) command) != 0)
 	{
-		fLOGD ("system_in_thread %s\n", strerror (errno));
+		DM ("system_in_thread %s\n", strerror (errno));
 	}
 }
 
@@ -538,13 +541,13 @@ void dump_environ (void)
 	int fd, count;
 	int h, t;
 
-	tid = gettid ();
+	tid = 0;//gettid ();
 
 	sprintf (buffer, "/proc/%d/environ", tid);
 
 	if ((fd = open (buffer, O_RDONLY)) < 0)
 	{
-		fLOGE ("dump_environ: failed to open [%s]: %s\n", buffer, strerror (errno));
+		DM ("dump_environ: failed to open [%s]: %s\n", buffer, strerror (errno));
 		return;
 	}
 
@@ -554,11 +557,11 @@ void dump_environ (void)
 
 	if (count < 0)
 	{
-		fLOGE ("dump_environ: failed to read the environ of tid [%d]: %s\n", tid, strerror (errno));
+		DM ("dump_environ: failed to read the environ of tid [%d]: %s\n", tid, strerror (errno));
 		return;
 	}
 
-	fLOGD ("dump_environ: begin, count=%d\n", count);
+	DM ("dump_environ: begin, count=%d\n", count);
 
 	if (count == sizeof (buffer)) count --;
 	buffer [count] = 0;
@@ -567,13 +570,13 @@ void dump_environ (void)
 	{
 		if (buffer [t] == 0)
 		{
-			fLOGD ("dump_environ: [%s]\n", & buffer [h]);
+			DM ("dump_environ: [%s]\n", & buffer [h]);
 
 			h = ++ t;
 		}
 	}
 
-	fLOGD ("dump_environ: end\n");
+	DM ("dump_environ: end\n");
 }
 
 #ifdef __cplusplus

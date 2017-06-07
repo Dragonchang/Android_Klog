@@ -1,6 +1,7 @@
 
 
 #define	LOG_TAG		"STT:server.c"
+#define _GNU_SOURCE
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -8,8 +9,9 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include <errno.h>
-#include "headers/common.h"
-#include "headers/server.h"
+#include "common.h"
+#include "server.h"
+#include <stddef.h>
 
 /*
  * return socket fd
@@ -71,7 +73,7 @@ int wait_for_connection (int fd)
 int get_client_info (int sockfd, int *pid, int *uid, int *gid)
 {
 	struct ucred cr;
-	int len = sizeof (cr);
+	int len = sizeof (struct ucred);
 
 	if (getsockopt (sockfd, SOL_SOCKET, SO_PEERCRED, & cr, (socklen_t *) & len) < 0)
 	{

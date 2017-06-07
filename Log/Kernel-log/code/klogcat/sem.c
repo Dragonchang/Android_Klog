@@ -10,9 +10,9 @@
 #include <time.h>
 #include <errno.h>
 #include <sys/ioctl.h>
-#include <utils/Log.h>
+//#include <utils/Log.h>
 
-#include "headers/sem.h"
+#include "sem.h"
 
 int timed_wait (sem_t *plock, int ms)
 {

@@ -7,12 +7,13 @@
 #include <poll.h>
 #include <errno.h>
 
-#include <cutils/log.h>
+//#include <cutils/log.h>
 
 //#include "headers/pollbase.h"
-#include "headers/libcommon.h"
-#include "headers/pollbase.h"
-#include "headers/fio.h"
+#include "libcommon.h"
+#include "pollbase.h"
+#include "fio.h"
+#include "common.h"
 
 
 /*
@@ -84,7 +85,7 @@ int poll_check_data (int fd)
 
 		if ((nr < 0) && (errno == EINTR))
 		{
-			fLOGD ("%s, retry poll in poll_check_data [%d]\n", strerror (errno), fds [0].fd);
+			DM ("%s, retry poll in poll_check_data [%d]\n", strerror (errno), fds [0].fd);
 			usleep (10000);
 			continue;
 		}
@@ -100,7 +101,7 @@ int poll_check_data (int fd)
 
 	if (nr < 0)
 	{
-		fLOGE ("poll: %d: %s\n", nr, strerror (errno));
+		DM ("poll: %d: %s\n", nr, strerror (errno));
 	}
 	return 0;
 }
@@ -129,7 +130,7 @@ int poll_wait (POLL *pl, int fd, int timeout_ms)
 
 			if ((nr < 0) && (errno == EINTR))
 			{
-				fLOGD ("%s, retry poll in poll_wait [%d][%d]\n", strerror (errno), fds [0].fd, fds [1].fd);
+				DM ("%s, retry poll in poll_wait [%d][%d]\n", strerror (errno), fds [0].fd, fds [1].fd);
 				usleep (10000);
 				continue;
 			}
@@ -141,7 +142,7 @@ int poll_wait (POLL *pl, int fd, int timeout_ms)
 		{
 			if (nr < 0)
 			{
-				fLOGE ("poll: %d: %s\n", nr, strerror (errno));
+				DM ("poll: %d: %s\n", nr, strerror (errno));
 			}
 			break;
 		}
@@ -167,7 +168,7 @@ int poll_wait (POLL *pl, int fd, int timeout_ms)
 		{
 			if (fds [nr].revents)
 			{
-				fLOGD ("poll no valid data! fd[%d]=%d revents=0x%04X\n", nr, fds [nr].fd, fds [nr].revents);
+				DM ("poll no valid data! fd[%d]=%d revents=0x%04X\n", nr, fds [nr].fd, fds [nr].revents);
 			}
 		}
 		nr = -1;
@@ -191,17 +192,17 @@ int poll_multiple_wait (POLL *pl, int timeout_ms, int *fd, int count)
 	{
 		debug = (access (DAT_DIR ".debug.poll", F_OK) == 0);
 
-		if (debug) fLOGD ("count = %d (+1)\n", count);
+		if (debug) DM ("count = %d (+1)\n", count);
 
 		for (nr = 0; nr < count; nr ++)
 		{
-			if (debug) fLOGD ("  device fd %d = %d\n", nr, fd [nr]);
+			if (debug) DM ("  device fd %d = %d\n", nr, fd [nr]);
 			fds [nr].fd = fd [nr];
 			fds [nr].events = POLLIN;
 			fds [nr].revents = 0;
 		}
 
-		if (debug) fLOGD ("    pipe fd %d = %d\n", nr, pl->pipefds [POLL_PIPE_READ]);
+		if (debug) DM ("    pipe fd %d = %d\n", nr, pl->pipefds [POLL_PIPE_READ]);
 		fds [nr].fd = pl->pipefds [POLL_PIPE_READ];
 		fds [nr].events = POLLIN;
 		fds [nr].revents = 0;
@@ -212,7 +213,7 @@ int poll_multiple_wait (POLL *pl, int timeout_ms, int *fd, int count)
 
 			if ((nr < 0) && (errno == EINTR))
 			{
-				fLOGD ("%s, retry poll in poll_multiple_wait\n", strerror (errno));
+				DM ("%s, retry poll in poll_multiple_wait\n", strerror (errno));
 				usleep (10000);
 				continue;
 			}
@@ -220,13 +221,13 @@ int poll_multiple_wait (POLL *pl, int timeout_ms, int *fd, int count)
 			break;
 		}
 
-		if (debug) fLOGD ("  poll() got %d\n", nr);
+		if (debug) DM ("  poll() got %d\n", nr);
 
 		if (nr <= 0)
 		{
 			if (nr < 0)
 			{
-				fLOGE ("poll: %d: %s\n", nr, strerror (errno));
+				DM ("poll: %d: %s\n", nr, strerror (errno));
 			}
 			break;
 		}
@@ -236,7 +237,7 @@ int poll_multiple_wait (POLL *pl, int timeout_ms, int *fd, int count)
 			/* user break */
 			char buffer [1];
 			read_nointr (fds [count].fd, buffer, 1);
-			if (debug) fLOGD ("  user break, return 0\n");
+			if (debug) DM ("  user break, return 0\n");
 			nr = 0;
 			break;
 		}
@@ -246,27 +247,27 @@ int poll_multiple_wait (POLL *pl, int timeout_ms, int *fd, int count)
 			if (fds [nr].revents & POLLIN)
 			{
 				/* have data */
-				if (debug) fLOGD ("  data return %d (+1)\n", nr);
+				if (debug) DM ("  data return %d (+1)\n", nr);
 				free (fds);
 				return (nr + 1);
 			}
 		}
 
-		if (debug) fLOGD ("  no valid data!\n");
+		if (debug) DM ("  no valid data!\n");
 
 		/* nr > 0 but no valid data found */
 		for (nr = 0; nr <= count; nr ++)
 		{
 			if (fds [nr].revents)
 			{
-				fLOGD ("poll no valid data! fd[%d]=%d revents=0x%04X\n", nr, fds [nr].fd, fds [nr].revents);
+				DM ("poll no valid data! fd[%d]=%d revents=0x%04X\n", nr, fds [nr].fd, fds [nr].revents);
 			}
 		}
 		nr = -1;
 		break;
 	}
 	free (fds);
-	if (debug) fLOGD ("  return %d\n", nr);
+	if (debug) DM ("  return %d\n", nr);
 	return nr;
 }
 

@@ -1,5 +1,5 @@
 SHELL := /bin/bash
-CC := g++
+CC := gcc
 $(shell mkdir -p out)
 $(shell mkdir -p out/bin)
 $(shell mkdir -p out/obj)
