@@ -146,9 +146,10 @@ static void parse_args(int argc, char **argv)
 	};
 
 	m_nDone = 0;
-
+    printf("parse_args **********begin\n");
 	while ((command = getopt_long(argc, argv, "f:r:n:db:e", long_options, NULL)) != -1)
 	{
+	   printf("parse_args **********command = %c\n", command);
 		switch (command)
 		{
 			case 'h':
@@ -159,8 +160,10 @@ static void parse_args(int argc, char **argv)
 
 			case 'f':
 			{
+
 				snprintf (m_szPath, PATH_MAX, "%s", optarg);
 				m_nFileToSave = 1;
+				printf("parse_args **********m_szPath = %s\n", m_szPath);
 			}
 			break;
 
@@ -198,41 +201,42 @@ static void parse_args(int argc, char **argv)
 			break;
 
 			default:
-			{
-				file_log (LOG_TAG ": klogcat version(%s). \n", VERSION);
-				file_log (LOG_TAG ": option -e(%d). \n", m_nEnableDebug);
 
-				file_log (LOG_TAG ": option -f(%s). \n", m_szPath);
-				file_log (LOG_TAG ": option -r(%d). \n", m_nKBytes);
-				file_log (LOG_TAG ": option -n(%d). \n", m_nCount);
-				file_log (LOG_TAG ": option -d(%d). \n", m_nDumpAndExit);
-				file_log (LOG_TAG ": option -b(%d)[0: kmsg, 1: lastkmsg]. \n", m_nDumpType);
-
-				if (m_nHelp == 1)
-				{
-					usage (argv [0]);
-				}
-				else
-				{
-					process_klogcat ();
-				}
-
-				if (m_nDumpType == 0)
-				{
-					logkmsg_stop ("logkmsg");
-				}
-				else
-				{
-					logkmsg_stop ("loglastkmsg");
-				}
-
-				file_log (LOG_TAG ": END. \n");
-
-				exit(-1);
-			}
 			break;
 		};
 	}// End while()
+	{
+	file_log (LOG_TAG ": klogcat version(%s). \n", VERSION);
+	file_log (LOG_TAG ": option -e(%d). \n", m_nEnableDebug);
+
+	file_log (LOG_TAG ": option -f(%s). \n", m_szPath);
+	file_log (LOG_TAG ": option -r(%d). \n", m_nKBytes);
+	file_log (LOG_TAG ": option -n(%d). \n", m_nCount);
+	file_log (LOG_TAG ": option -d(%d). \n", m_nDumpAndExit);
+	file_log (LOG_TAG ": option -b(%d)[0: kmsg, 1: lastkmsg]. \n", m_nDumpType);
+
+	if (m_nHelp == 1)
+	{
+		usage (argv [0]);
+	}
+	else
+	{
+		process_klogcat ();
+	}
+
+	if (m_nDumpType == 0)
+	{
+		logkmsg_stop ("logkmsg");
+	}
+	else
+	{
+		logkmsg_stop ("loglastkmsg");
+	}
+
+	file_log (LOG_TAG ": END. \n");
+
+	exit(-1);
+}
 }
 
 int main (int argc, char **argv)
