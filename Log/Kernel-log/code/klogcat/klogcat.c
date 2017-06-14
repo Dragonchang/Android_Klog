@@ -70,9 +70,9 @@ static int usage (char *prg)
 		"\t%s \n"
 		"\t%s --help\n"
 		"\t%s -b lastkmsg\n"
-		"\t%s -f /data/htclog/KernelLog.txt -r 2048 -n 8\n"
-		"\t%s -f /data/htclog/KernelLog.txt -d\n"
-		"\t%s -f /data/htclog/KernelLog.txt -b lastkmsg\n"
+		"\t%s -f ./KernelLog.txt -r 2048 -n 8\n"
+		"\t%s -f ./KernelLog.txt -d\n"
+		"\t%s -f ./KernelLog.txt -b lastkmsg\n"
 		"\t%s -e\n"
 		"\n"
 		, prg, prg, prg, prg, prg, prg, prg, prg, prg);
